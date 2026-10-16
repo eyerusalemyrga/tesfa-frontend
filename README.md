@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tesfa Frontend
 
-## Getting Started
+Next.js 15 (App Router) + TypeScript + Tailwind, tested with Jest + Testing Library.
 
-First, run the development server:
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+echo "BASE_URL=http://localhost:8000/api" > .env.local   # address of the Tesfa backend
+npm install
+npm run dev                  # http://localhost:3000
+npm test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How data flows
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+page.tsx  →  hooks/useFetchX.ts  →  utils/fetchX.ts  →  /api/x (route.ts)  →  BASE_URL/x/ (backend)
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Layer | Folder | Job |
+|---|---|---|
+| Route | `src/app/api/<name>/route.ts` | Runs on the server. A one-liner that calls `forward()` (`api/forward.ts`), which passes the request and its `Authorization: Bearer <token>` header on to `BASE_URL`. |
+| Fetch | `src/app/utils/fetchX.ts` | Runs in the browser. Calls `/api/<name>` through `apiFetch` (`utils/apiClient.ts`), which adds the token, refreshes it once when it expires, and throws the backend's error message. |
+| Hook | `src/app/hooks/useFetchX.ts` | Wraps the fetch with `loading` / `error` / data state for pages. |
+| Types | `src/app/utils/types/` | Shapes of the data the backend returns. |
 
-## Learn More
+Login returns JWTs (`access`, `refresh`) and the user. `utils/session.ts` keeps them in `localStorage`; `hooks/useSession` gives pages the current user.
 
-To learn more about Next.js, take a look at the following resources:
+## Pages
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Path | Who | What |
+|---|---|---|
+| `/` | Everyone | Chat with Tesfa AI. Guests see Log in / Create account on the right; signed-in users get saved history in the sidebar. |
+| `/signin`, `/signup`, `/forgot-password` | Everyone | Auth. Sign-up creates a Health Professional. |
+| `/insights` | Signed in | Graphs from `/graphs/` (filter by country) and charts from past answers (`/charts/`). |
+| `/account` | Signed in | Edit own profile and password. |
+| `/admin` | Admin | Usage overview: users, conversations, charts. |
+| `/admin/users` | Admin | Search, add, activate/deactivate, delete users. |
+| `/admin/queries` | Admin | Every conversation; open one to read the thread. |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Route guards live in `sharedComponents/AppShell.tsx` (`publicPaths`, `/admin*` needs an Admin).
 
-## Deploy on Vercel
+## Adding a new endpoint
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. `src/app/api/<name>/route.ts`: `export const GET = (request: Request) => forward(request, "/<name>/");`
+2. `src/app/utils/fetch<Name>.ts`: `apiFetch<Type>("/api/<name>")`.
+3. `src/app/hooks/useFetch<Name>.ts`: wrap it with `useFetch` (see `hooks/useFetchUsers.ts`).
+4. Add the type to `src/app/utils/types/`.
+5. Add a test next to the fetch file (see `utils/apiClient.test.ts`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Adding a new page
+
+Create `src/app/<page>/page.tsx` (and `page.test.tsx`, plus a `components/` folder if needed). Add the link to `sharedComponents/Sidebar`. Pages that should not show the sidebar go in `hideSidebarPaths` in `sharedComponents/AppShell.tsx`.
