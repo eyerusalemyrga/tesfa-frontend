@@ -6,13 +6,14 @@ export class ApiError extends Error {
   }
 }
 
+export const BUSY_MESSAGE = "The site is busy right now. Please try again.";
+
 interface Options extends RequestInit {
   // Send the stored token. Off for login/signup, where a stale token would be rejected.
   auth?: boolean;
 }
 
-// Calls one of our /api routes. Attaches the token, refreshes it once when it has
-// expired, and throws an ApiError with the backend's own message on failure.
+
 export async function apiFetch<T>(path: string, { auth = true, ...init }: Options = {}): Promise<T> {
   const send = () => {
     const headers = new Headers(init.headers);
@@ -36,6 +37,9 @@ export async function apiFetch<T>(path: string, { auth = true, ...init }: Option
     }
   }
 
+  if (response.status === 503) {
+    throw new ApiError(BUSY_MESSAGE, 503);
+  }
   if (!response.ok) {
     throw new ApiError(await readError(response), response.status);
   }
@@ -77,7 +81,6 @@ const fieldLabels: Record<string, string> = {
   non_field_errors: "",
 };
 
-// DRF errors come as {detail: "..."} or {field: ["..."]}; turn either into one sentence.
 export async function readError(response: Response) {
   const text = await response.text().catch(() => "");
   try {

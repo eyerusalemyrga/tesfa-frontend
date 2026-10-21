@@ -1,4 +1,4 @@
-import { apiFetch, readError } from "./apiClient";
+import { apiFetch, BUSY_MESSAGE, readError } from "./apiClient";
 
 global.fetch = jest.fn();
 const fetchMock = fetch as jest.Mock;
@@ -26,6 +26,12 @@ describe("apiFetch", () => {
     const headers = fetchMock.mock.calls[0][1].headers as Headers;
     expect(headers.get("Authorization")).toBe("Bearer abc");
     expect(data).toEqual([{ id: 1 }]);
+  });
+
+  it("says the site is busy on a 503", async () => {
+    fetchMock.mockResolvedValue(reply(503, { detail: "Tesfa AI returned an error." }));
+
+    await expect(apiFetch("/api/query")).rejects.toMatchObject({ message: BUSY_MESSAGE, status: 503 });
   });
 
   it("leaves the token off when auth is false", async () => {
