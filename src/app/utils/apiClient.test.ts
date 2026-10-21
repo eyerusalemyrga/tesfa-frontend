@@ -29,7 +29,7 @@ describe("apiFetch", () => {
   });
 
   it("says the site is busy on a 503", async () => {
-    fetchMock.mockResolvedValue(reply(503, { detail: "Tesfa AI returned an error." }));
+    fetchMock.mockResolvedValue(reply(503, { detail: "Tesfa AI is busy, plese try again" }));
 
     await expect(apiFetch("/api/query")).rejects.toMatchObject({ message: BUSY_MESSAGE, status: 503 });
   });
