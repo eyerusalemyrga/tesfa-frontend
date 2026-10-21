@@ -34,9 +34,12 @@ export function useChat(onSaved?: () => void) {
   const [sending, setSending] = useState(false);
   const [loadingThread, setLoadingThread] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // True when a guest asked and the backend wants them to have an account.
+  const [needsAccount, setNeedsAccount] = useState(false);
 
   async function send(query: string, filters: Filters) {
     setError(null);
+    setNeedsAccount(false);
     setMessages((current) => [...current, localMessage(query, filters)]);
     setSending(true);
     try {
@@ -52,12 +55,11 @@ export function useChat(onSaved?: () => void) {
       }
       onSaved?.();
     } catch (err) {
-      const guest = err instanceof ApiError && err.status === 401 && !getToken();
-      setError(
-        guest
-          ? "Sign in or create an account to ask Tesfa. Guest questions aren't switched on in the backend yet."
-          : (err as Error).message
-      );
+      if (err instanceof ApiError && err.status === 401 && !getToken()) {
+        setNeedsAccount(true);
+      } else {
+        setError((err as Error).message);
+      }
     } finally {
       setSending(false);
     }
@@ -81,7 +83,8 @@ export function useChat(onSaved?: () => void) {
     setMessages([]);
     setConversationId(null);
     setError(null);
+    setNeedsAccount(false);
   }
 
-  return { messages, conversationId, sending, loadingThread, error, send, open, reset };
+  return { messages, conversationId, sending, loadingThread, error, needsAccount, send, open, reset };
 }

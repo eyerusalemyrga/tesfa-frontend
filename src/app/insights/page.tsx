@@ -84,7 +84,7 @@ export default function InsightsPage() {
           <p className="text-gray-500">Loading...</p>
         ) : saved.length === 0 ? (
           <p className="rounded-xl border border-dashed border-gray-300 bg-white p-6 text-center text-gray-500">
-            No charts yet. Ask Tesfa for statistics, e.g. &quot;Show stats for Sudan&quot;.
+            No charts yet. Ask Tesfa for statistics, e.g. &quot;Show stats for United Kingdom&quot;.
           </p>
         ) : (
           <div className="grid gap-6 lg:grid-cols-2">

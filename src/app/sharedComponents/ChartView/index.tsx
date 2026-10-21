@@ -16,7 +16,6 @@ import {
 } from "recharts";
 import type { ChartData } from "../../utils/types/graphs";
 
-// Fixed categorical order (validated for colour-blind separation); never cycled.
 export const SERIES_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"];
 const SINGLE_COLOR = "#0f7a63";
 const AXIS = { fontSize: 12, fill: "#6b7280" };
@@ -32,11 +31,9 @@ interface Row {
 
 interface Props {
   chart: Partial<ChartData>;
-  // Bar charts with more rows than this show only the largest ones.
   limit?: number;
   height?: number;
   showTitle?: boolean;
-  // Labels are dates/periods: keep their order and draw upright bars.
   timeSeries?: boolean;
 }
 

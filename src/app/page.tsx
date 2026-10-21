@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FaDove } from "react-icons/fa";
 import ChatSidebar from "./components/ChatSidebar";
@@ -10,7 +11,6 @@ import { useChat } from "./hooks/useChat";
 import { useConversations } from "./hooks/useFetchConversations";
 import { useSession } from "./hooks/useSession";
 
-// Ask Tesfa AI, ChatGPT style. Anyone can ask; signed-in users also get saved history.
 export default function ChatPage() {
   const { user, ready } = useSession();
   const { conversations, setConversations, reload } = useConversations(ready && !!user);
@@ -20,7 +20,6 @@ export default function ChatPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Admins can list everyone's conversations; the chat history shows only their own.
   const myConversations = user ? conversations.filter((c) => c.user === user.id) : [];
 
   useEffect(() => {
@@ -77,6 +76,15 @@ export default function ChatPage() {
           {chat.error && (
             <p role="alert" className="mx-auto mb-4 max-w-3xl rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
               {chat.error}
+            </p>
+          )}
+          {chat.needsAccount && (
+            <p role="alert" className="mx-auto mb-4 max-w-3xl rounded-lg bg-accent-soft/60 px-4 py-3 text-sm text-gray-700">
+              Please{" "}
+              <Link href="/signup" className="font-semibold text-brand hover:underline">create an account</Link>
+              {" "}or{" "}
+              <Link href="/signin" className="font-semibold text-brand hover:underline">sign in</Link>
+              {" "}to ask Tesfa.
             </p>
           )}
           <div ref={bottomRef} />

@@ -2,8 +2,8 @@ import { FaDove } from "react-icons/fa";
 
 const suggestions = [
   "Which countries face the highest conflict risk?",
-  "What are the health consequences of the conflict in Sudan?",
-  "Show stats for Ethiopia",
+  "What are the health consequences of conflict in the United Kingdom?",
+  "Show stats for America",
   "How many refugees has the war in Ukraine produced?",
 ];
 

@@ -27,11 +27,20 @@ describe("useChat", () => {
     expect(fetchQuery).toHaveBeenLastCalledWith(expect.objectContaining({ query: "Follow up", conversation_id: 7 }));
   });
 
-  it("tells guests to sign in when the backend refuses them", async () => {
+  it("asks guests to have an account when the backend refuses them", async () => {
     fetchQuery.mockRejectedValue(new ApiError("Authentication credentials were not provided.", 401));
     const { result } = renderHook(() => useChat());
 
     await act(() => result.current.send("Hi", filters));
-    expect(result.current.error).toMatch(/Sign in or create an account/);
+    expect(result.current.needsAccount).toBe(true);
+    expect(result.current.error).toBeNull();
+  });
+
+  it("shows the backend's error", async () => {
+    fetchQuery.mockRejectedValue(new ApiError("The AI service is busy right now.", 503));
+    const { result } = renderHook(() => useChat());
+
+    await act(() => result.current.send("Hi", filters));
+    expect(result.current.error).toBe("The AI service is busy right now.");
   });
 });

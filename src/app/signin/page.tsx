@@ -46,8 +46,6 @@ export default function SignInPage() {
         <p className="text-sm text-brand/70">
           Don&apos;t have an account?{" "}
           <Link href="/signup" className="font-semibold text-brand hover:underline">Sign up</Link>
-          <span className="mx-2">·</span>
-          <Link href="/" className="font-semibold text-brand hover:underline">Continue as guest</Link>
         </p>
       </form>
     </AuthLayout>
